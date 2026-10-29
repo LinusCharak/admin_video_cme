@@ -1,0 +1,1055 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Video CME Admin</title>
+<style>
+  :root {
+    --navy: #0b2148; --navy-2: #13306a; --gold: #c9a04a; --gold-soft: #f6eedb;
+    --bg: #f4f6fa; --card: #ffffff; --line: #e3e7ef; --text: #1d2433; --muted: #5d6779;
+    --green: #2e7d32; --green-soft: #e6f3e7; --orange: #ef6c00; --orange-soft: #fdf0e3;
+    --red: #c62828; --red-soft: #fdecec; --grey-bar: #e6e9ef;
+    --radius: 12px; --shadow: 0 1px 2px rgba(16,24,40,.06), 0 2px 8px rgba(16,24,40,.06);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text);
+    font: 14px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+  button, input, select { font: inherit; }
+  .hidden { display: none !important; }
+
+  /* ---------- login ---------- */
+  #login { min-height: 100vh; display: grid; place-items: center; padding: 16px;
+    background: radial-gradient(1200px 600px at 10% -10%, #1f3f86 0%, var(--navy) 55%, #071530 100%); }
+  .login-card { width: 100%; max-width: 380px; background: var(--card); border-radius: 18px; padding: 28px;
+    box-shadow: 0 20px 50px rgba(0,0,0,.35); }
+  .brand { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+  .brand-mark { width: 44px; height: 44px; border-radius: 12px; background: var(--navy); display: grid; place-items: center; }
+  .brand h1 { font-size: 20px; margin: 0; color: var(--navy); }
+  .brand p { margin: 0; color: var(--muted); font-size: 13px; }
+  label.f { display: block; font-weight: 600; font-size: 13px; margin: 14px 0 6px; color: #2b3445; }
+  input.in, select.in { width: 100%; padding: 10px 12px; border: 1px solid #cfd6e2; border-radius: 10px; background: #fff; color: var(--text); }
+  input.in:focus, select.in:focus { outline: 2px solid #a9c1f5; border-color: #6f93e0; }
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 0; cursor: pointer;
+    padding: 9px 14px; border-radius: 10px; font-weight: 600; background: #e9edf5; color: var(--navy); white-space: nowrap; }
+  .btn:hover { filter: brightness(.97); }
+  .btn:disabled { opacity: .55; cursor: default; }
+  .btn.primary { background: var(--navy); color: #fff; }
+  .btn.gold { background: var(--gold); color: #1d1606; }
+  .btn.danger { background: var(--red-soft); color: var(--red); }
+  .btn.ghost { background: transparent; color: var(--navy); }
+  .btn.small { padding: 6px 10px; font-size: 13px; border-radius: 8px; }
+  .btn.block { width: 100%; padding: 11px; margin-top: 20px; }
+  .err { color: var(--red); background: var(--red-soft); border-radius: 8px; padding: 8px 10px; margin-top: 12px; font-size: 13px; }
+
+  /* ---------- LIVOMYN CME logo ---------- */
+  .logo { display: flex; align-items: center; justify-content: center; gap: 12px; margin: 4px 0 6px; }
+  .logo-mark { width: 92px; height: 69px; flex: none; }
+  .logo-word { display: flex; flex-direction: column; gap: 4px; }
+  .logo-row { display: flex; align-items: center; gap: 8px; }
+  .logo-name { font-weight: 900; font-size: 30px; letter-spacing: .04em; color: #111111; line-height: 1; }
+  .logo-cme { font-weight: 800; font-size: 14px; letter-spacing: .12em; color: #fff; border-radius: 7px; padding: 3px 7px;
+    background: linear-gradient(135deg, #e2b65a, #b8862b); }
+  .logo-tag { font-weight: 700; font-size: 8.6px; letter-spacing: .2em; color: #2f8a4e; white-space: nowrap; }
+  .logo-sub { text-align: center; color: var(--muted); font-size: 13px; margin: 6px 0 4px; }
+  @media (max-width: 420px) {
+    .login-card { padding: 22px 18px; }
+    .logo { gap: 8px; }
+    .logo-mark { width: 66px; height: 50px; }
+    .logo-name { font-size: 22px; }
+    .logo-cme { font-size: 11px; padding: 2px 5px; }
+    .logo-tag { font-size: 6.4px; letter-spacing: .16em; }
+  }
+
+  /* ---------- app shell ---------- */
+  header.top { position: sticky; top: 0; z-index: 20; background: var(--navy); color: #fff; }
+  .top-inner { max-width: 1280px; margin: 0 auto; padding: 10px 16px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .top .title { font-weight: 700; font-size: 16px; display: flex; align-items: center; gap: 10px; margin-right: auto; }
+  .top .title small { font-weight: 500; color: #c9d4ee; }
+  .tabs { display: flex; gap: 4px; background: rgba(255,255,255,.08); padding: 4px; border-radius: 10px; }
+  .tab { background: transparent; color: #dbe4f7; border: 0; padding: 7px 14px; border-radius: 8px; font-weight: 600; cursor: pointer; }
+  .tab.active { background: #fff; color: var(--navy); }
+  .top .btn { background: rgba(255,255,255,.12); color: #fff; }
+  main { max-width: 1280px; margin: 0 auto; padding: 18px 16px 48px; }
+  .bar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 14px; }
+  .bar .grow { flex: 1 1 220px; }
+  .bar .in { width: auto; min-width: 140px; }
+  .bar .grow .in { width: 100%; }
+  .muted { color: var(--muted); }
+  .updated { font-size: 12px; color: var(--muted); }
+  .switch { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); cursor: pointer; user-select: none; }
+
+  /* ---------- KPI tiles ---------- */
+  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin-bottom: 16px; }
+  .kpi { background: var(--card); border-radius: var(--radius); padding: 14px 16px; box-shadow: var(--shadow); border: 1px solid var(--line); }
+  .kpi .v { font-size: 26px; font-weight: 800; letter-spacing: -.02em; }
+  .kpi .l { color: var(--muted); font-size: 12.5px; font-weight: 600; text-transform: uppercase; letter-spacing: .03em; }
+  .kpi .s { color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+  .kpi.main { background: linear-gradient(135deg, var(--navy) 0%, var(--navy-2) 100%); color: #fff; border: 0; }
+  .kpi.main .l, .kpi.main .s { color: #c9d4ee; }
+  .kpi.main .bar-wrap { background: rgba(255,255,255,.18); }
+
+  /* ---------- tables ---------- */
+  .card { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); border: 1px solid var(--line); overflow: hidden; }
+  .card-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 12px 14px; border-bottom: 1px solid var(--line); }
+  .card-head h2 { font-size: 15px; margin: 0 auto 0 0; color: var(--navy); }
+  .scroll { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { padding: 9px 12px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: middle; }
+  th { font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); background: #fafbfd; position: sticky; top: 0; z-index: 1; white-space: nowrap; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  tr.lvl-rsm td { background: #eef2fa; font-weight: 700; }
+  tr.lvl-asm td { background: #f8f9fc; font-weight: 600; }
+  tr.lvl-total td { background: var(--gold-soft); font-weight: 800; border-top: 2px solid var(--gold); }
+  tr.lvl-dsa td:first-child { padding-left: 52px; }
+  tr.lvl-asm td:first-child { padding-left: 28px; }
+  tr.clickable { cursor: pointer; }
+  tr.clickable:hover td { filter: brightness(.98); }
+  .chev { display: inline-block; width: 16px; color: var(--muted); transition: transform .15s; }
+  .open > td .chev { transform: rotate(90deg); }
+  .who { display: flex; flex-direction: column; }
+  .who small { font-weight: 500; color: var(--muted); }
+  .pct { display: flex; align-items: center; gap: 8px; min-width: 150px; }
+  .bar-wrap { flex: 1; height: 8px; background: var(--grey-bar); border-radius: 99px; overflow: hidden; display: flex; }
+  .bar-done { background: var(--green); }
+  .bar-prog { background: var(--orange); }
+  .pct b { width: 38px; text-align: right; font-variant-numeric: tabular-nums; }
+  .pill { display: inline-block; padding: 2px 8px; border-radius: 99px; font-size: 12px; font-weight: 700; }
+  .pill.dsa { background: #e8eefb; color: #23408a; }
+  .pill.asm { background: #fdf3df; color: #8a5b00; }
+  .pill.rsm { background: #eadff7; color: #5b2a8a; }
+  .pill.on { background: var(--green-soft); color: var(--green); }
+  .pill.off { background: var(--red-soft); color: var(--red); }
+  .empty { padding: 36px; text-align: center; color: var(--muted); }
+  .actions { display: flex; gap: 6px; justify-content: flex-end; flex-wrap: nowrap; }
+  #userTable td.wrap { max-width: 230px; overflow-wrap: anywhere; }
+  #userTable td.rep { max-width: 210px; }
+  #userTable td:last-child { white-space: nowrap; width: 1%; }
+
+  /* ---------- modal ---------- */
+  .backdrop { position: fixed; inset: 0; background: rgba(9,18,40,.5); display: grid; place-items: center; padding: 16px; z-index: 50; }
+  .modal { width: 100%; max-width: 720px; max-height: calc(100vh - 32px); overflow: auto; background: var(--card); border-radius: 16px; box-shadow: 0 30px 70px rgba(0,0,0,.35); }
+  .modal header { padding: 16px 20px; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 10px; }
+  .modal header h3 { margin: 0; font-size: 17px; color: var(--navy); margin-right: auto; }
+  .modal .body { padding: 6px 20px 18px; }
+  .modal footer { padding: 14px 20px; border-top: 1px solid var(--line); display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 16px; }
+  .section { margin-top: 18px; font-size: 12px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--gold); }
+  .hint { font-size: 12.5px; color: var(--muted); margin-top: 4px; }
+  .note { background: #f3f6fb; border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; font-size: 13px; margin-top: 12px; }
+  .note.warn { background: var(--orange-soft); border-color: #f6d3ae; }
+  .check { display: flex; gap: 8px; align-items: flex-start; margin-top: 14px; font-size: 13.5px; }
+
+  /* ---------- toast ---------- */
+  #toasts { position: fixed; right: 16px; bottom: 16px; display: grid; gap: 8px; z-index: 60; }
+  .toast { background: #172033; color: #fff; padding: 10px 14px; border-radius: 10px; box-shadow: var(--shadow); max-width: 360px; font-size: 13.5px; }
+  .toast.bad { background: var(--red); }
+  .spinner { width: 18px; height: 18px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: spin .7s linear infinite; display: inline-block; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ---------- doctor CMEs ---------- */
+  .mini { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); font-weight: 600; }
+  .mini .in { min-width: 0; width: 150px; }
+  .pill.done { background: var(--green-soft); color: var(--green); }
+  .pill.watched { background: var(--orange-soft); color: var(--orange); }
+  .pill.started { background: #eef0f4; color: var(--muted); }
+  .pill.type { background: #eef2fa; color: var(--navy); font-weight: 600; }
+  .pill.type.unpl { background: #fdf3df; color: #8a5b00; }
+  .links { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
+  .links a { font-size: 12px; font-weight: 700; text-decoration: none; color: var(--navy); background: #e9edf5; border-radius: 6px; padding: 2px 7px; }
+  .links a:hover { background: #dbe2f0; }
+  #cmeTable td { vertical-align: top; }
+  #cmeTable td.ind { max-width: 220px; font-size: 12.5px; }
+  .survey { padding: 10px 14px 14px; display: grid; gap: 8px; }
+  .srow { display: grid; grid-template-columns: minmax(140px, 260px) 1fr 70px; gap: 10px; align-items: center; font-size: 13px; }
+  .srow .bar-wrap { height: 10px; }
+  .srow b { text-align: right; font-variant-numeric: tabular-nums; }
+  dl.kv { display: grid; grid-template-columns: 170px 1fr; gap: 6px 14px; margin: 8px 0 0; font-size: 13.5px; }
+  dl.kv dt { color: var(--muted); font-weight: 600; }
+  dl.kv dd { margin: 0; overflow-wrap: anywhere; }
+  .photo { width: 96px; height: 96px; border-radius: 50%; object-fit: cover; border: 3px solid var(--gold); background: #eee; }
+
+  @media (max-width: 720px) {
+    dl.kv { grid-template-columns: 1fr; gap: 2px; }
+    dl.kv dd { margin-bottom: 8px; }
+    .srow { grid-template-columns: 1fr 60px; }
+    .srow .bar-wrap { grid-column: 1 / -1; grid-row: 2; }
+    .grid2 { grid-template-columns: 1fr; }
+    th, td { padding: 8px; }
+    tr.lvl-dsa td:first-child { padding-left: 30px; }
+    tr.lvl-asm td:first-child { padding-left: 16px; }
+    .hide-sm { display: none; }
+    .top .title small { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ====================== LOGIN ====================== -->
+<section id="login">
+  <form class="login-card" id="loginForm" autocomplete="on">
+    <div class="logo" role="img" aria-label="LIVOMYN CME">
+      <svg class="logo-mark" viewBox="0 0 160 120" aria-hidden="true"><defs><linearGradient id="lvL" x1="0" y1="0" x2="0.9" y2="1"><stop offset="0" stop-color="#c0573f"/><stop offset=".55" stop-color="#9c3d2a"/><stop offset="1" stop-color="#6e2618"/></linearGradient><linearGradient id="gbL" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7fae4a"/><stop offset="1" stop-color="#4c7a28"/></linearGradient><linearGradient id="gdL" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ecc870"/><stop offset="1" stop-color="#b38228"/></linearGradient><radialGradient id="shL" cx=".3" cy=".25" r=".6"><stop offset="0" stop-color="#ffffff" stop-opacity=".28"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></radialGradient></defs><ellipse cx="70" cy="90" rx="7" ry="12" transform="rotate(-18 70 90)" fill="url(#gbL)"/><path d="M12 60 C 8 32, 40 14, 80 17 C 112 19, 140 25, 155 35 C 159 38, 157 45, 148 47 C 126 52, 106 57, 91 65 C 87 68, 85 72, 81 71 C 74 88, 56 103, 36 100 C 20 97, 13 80, 12 60 Z" fill="url(#lvL)"/><path d="M12 60 C 8 32, 40 14, 80 17 C 112 19, 140 25, 155 35 C 159 38, 157 45, 148 47 C 126 52, 106 57, 91 65 C 87 68, 85 72, 81 71 C 74 88, 56 103, 36 100 C 20 97, 13 80, 12 60 Z" fill="url(#shL)"/><path d="M90 18 C 86 34, 84 52, 83 69" stroke="#f3d5c8" stroke-opacity=".55" stroke-width="2.2" fill="none" stroke-linecap="round"/><path d="M118 22 C 118 10, 128 3, 138 1 C 139 13, 132 22, 118 22 Z" fill="url(#gdL)"/><path d="M119 21 C 124 15, 129 9, 135 4" stroke="#8a6420" stroke-width="1.3" fill="none" stroke-linecap="round"/><circle cx="45" cy="56" r="20" fill="#ffffff"/><path d="M39 45 L 57 56 L 39 67 Z" fill="#8e3524"/></svg>
+      <div class="logo-word">
+        <div class="logo-row"><span class="logo-name">LIVOMYN</span><span class="logo-cme">CME</span></div>
+        <div class="logo-tag">CONTINUING MEDICAL EDUCATION</div>
+      </div>
+    </div>
+    <p class="logo-sub">Admin portal · Charak Pharma</p>
+    <label class="f" for="lu">Username</label>
+    <input class="in" id="lu" name="username" autocomplete="username" required>
+    <label class="f" for="lp">Password</label>
+    <input class="in" id="lp" name="password" type="password" autocomplete="current-password" required>
+    <button class="btn primary block" id="loginBtn" type="submit">Log in</button>
+    <div class="err hidden" id="loginErr"></div>
+  </form>
+</section>
+
+<!-- ====================== APP ====================== -->
+<section id="app" class="hidden">
+  <header class="top">
+    <div class="top-inner">
+      <div class="title">Video CME Admin <small>Charak Pharma · LIVOMYN</small></div>
+      <nav class="tabs" role="tablist">
+        <button class="tab active" data-tab="scores" role="tab">Scores</button>
+        <button class="tab" data-tab="cmes" role="tab">Doctor CMEs</button>
+        <button class="tab" data-tab="users" role="tab">Users</button>
+      </nav>
+      <button class="btn small" id="logoutBtn" title="Log out">Log out</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- ---------- SCORES ---------- -->
+    <div id="tab-scores">
+      <div class="bar">
+        <select class="in" id="sZone" aria-label="Zone"><option value="">All zones</option></select>
+        <div class="grow"><input class="in" id="sSearch" placeholder="Search RSM, ASM, DSA or HQ…" aria-label="Search"></div>
+        <select class="in" id="sSort" aria-label="Sort">
+          <option value="name">Sort: Name</option>
+          <option value="pct">Sort: % completed (low first)</option>
+          <option value="pctdesc">Sort: % completed (high first)</option>
+          <option value="done">Sort: Completed (most first)</option>
+        </select>
+        <label class="switch"><input type="checkbox" id="sAuto" checked> Auto-refresh (1 min)</label>
+        <button class="btn" id="sRefresh">Refresh</button>
+        <button class="btn" id="sExport">Export CSV</button>
+      </div>
+      <div class="kpis" id="kpis"></div>
+      <div class="card">
+        <div class="card-head">
+          <h2>Performance · RSM › ASM › DSA</h2>
+          <span class="updated" id="sUpdated"></span>
+          <button class="btn small ghost" id="sExpand">Expand all</button>
+          <button class="btn small ghost" id="sCollapse">Collapse all</button>
+        </div>
+        <div class="scroll"><table id="scoreTable">
+          <thead><tr>
+            <th>Name</th><th class="hide-sm">HQ</th><th>Planned completed</th><th class="num">Done / Total</th>
+            <th class="num">In progress</th><th class="num">Pending</th><th class="num">Unplanned</th>
+            <th class="num">Today</th><th class="hide-sm">Last login</th>
+          </tr></thead>
+          <tbody></tbody>
+        </table></div>
+      </div>
+      <p class="hint" style="margin-top:10px">Planned = doctors in the HQ list with a certificate. Pending = planned doctors without a certificate.
+        Unplanned = doctors added from the app or from another HQ. A manager's line shows their whole team.</p>
+    </div>
+
+    <!-- ---------- DOCTOR CMEs ---------- -->
+    <div id="tab-cmes" class="hidden">
+      <div class="bar">
+        <label class="mini" for="cFrom">From <input class="in" type="date" id="cFrom"></label>
+        <label class="mini" for="cTo">To <input class="in" type="date" id="cTo"></label>
+        <button class="btn primary" id="cLoad">Show</button>
+        <select class="in" id="cZone" aria-label="Zone"><option value="">All zones</option></select>
+        <select class="in" id="cStatus" aria-label="Status">
+          <option value="">All statuses</option>
+          <option value="Certificate issued">Certificate issued</option>
+          <option value="open">Not completed</option>
+        </select>
+        <select class="in" id="cType" aria-label="Doctor type">
+          <option value="">All doctor types</option>
+          <option>Planned</option><option>Planned - other HQ</option><option>Unplanned</option>
+        </select>
+        <div class="grow"><input class="in" id="cSearch" placeholder="Search doctor, mobile, code, DSA, ASM, RSM, HQ or certificate no." aria-label="Search CMEs"></div>
+        <button class="btn" id="cExport">Export CSV</button>
+      </div>
+      <div class="kpis" id="cKpis"></div>
+      <div class="card" style="margin-bottom:14px">
+        <div class="card-head"><h2>Survey · indications chosen</h2><span class="updated" id="cSurveyNote"></span></div>
+        <div class="survey" id="cSurvey"></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h2 id="cCount">Doctor CMEs</h2><span class="updated" id="cUpdated"></span></div>
+        <div class="scroll"><table id="cmeTable">
+          <thead><tr>
+            <th>Date</th><th>Doctor</th><th class="hide-sm">Mobile / Email</th><th>Type</th>
+            <th class="hide-sm">DSA · HQ</th><th class="hide-sm">Survey</th><th class="num hide-sm">Watched</th><th>Certificate</th>
+          </tr></thead>
+          <tbody></tbody>
+        </table></div>
+      </div>
+      <p class="hint" style="margin-top:10px">One row per doctor session. Doctor name, mobile, email and class are as confirmed on the app's details screen.
+        A CME conducted by an ASM / RSM for a DSA is shown under that DSA. Click a row for all details.</p>
+    </div>
+
+    <!-- ---------- USERS ---------- -->
+    <div id="tab-users" class="hidden">
+      <div class="bar">
+        <div class="grow"><input class="in" id="uSearch" placeholder="Search name, username, HQ, mobile or email…" aria-label="Search users"></div>
+        <select class="in" id="uDesig" aria-label="Designation"><option value="">All designations</option><option>DSA</option><option>ASM</option><option>RSM</option></select>
+        <select class="in" id="uZone" aria-label="Zone"><option value="">All zones</option></select>
+        <select class="in" id="uStatus" aria-label="Status"><option value="active">Active</option><option value="inactive">Inactive</option><option value="">All</option></select>
+        <button class="btn gold" id="uAdd">+ Add user</button>
+      </div>
+      <div class="card">
+        <div class="card-head"><h2 id="uCount">Users</h2><span class="updated">Passwords are never shown.</span></div>
+        <div class="scroll"><table id="userTable">
+          <thead><tr>
+            <th>Name</th><th>Designation</th><th>HQ</th><th class="hide-sm">Reports to</th>
+            <th class="hide-sm">Mobile / Email</th><th class="hide-sm">Last login</th><th>Status</th><th></th>
+          </tr></thead>
+          <tbody></tbody>
+        </table></div>
+      </div>
+    </div>
+  </main>
+</section>
+
+<div id="toasts" aria-live="polite"></div>
+
+<script>
+/* =====================================================================
+   Video CME Admin. This page holds NO secrets: the admin login and all
+   data access happen in the Supabase Edge Function "admin-portal".
+   ===================================================================== */
+const CONFIG = {
+  SUPABASE_URL: 'https://jahmqejkdtnqbhjutgut.supabase.co',
+  // Optional: the PUBLIC publishable/anon key (same one as in the app's
+  // app_config.dart). Never put a secret / service-role key here.
+  PUBLISHABLE_KEY: '',
+};
+const ENDPOINT = CONFIG.SUPABASE_URL.replace(/\/+$/, '') + '/functions/v1/admin-portal';
+const AUTO_MS = 60_000;
+
+// ---------- small helpers ----------
+const $ = (s, r = document) => r.querySelector(s);
+const el = (tag, attrs = {}, ...kids) => {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (v == null || v === false) continue;
+    if (k === 'class') n.className = v;
+    else if (k === 'text') n.textContent = v;
+    else if (k.startsWith('on')) n.addEventListener(k.slice(2), v);
+    else n.setAttribute(k, v === true ? '' : v);
+  }
+  for (const c of kids.flat()) if (c != null && c !== false) n.append(c.nodeType ? c : document.createTextNode(String(c)));
+  return n;
+};
+const store = {
+  get(k) { try { return sessionStorage.getItem(k); } catch { return null; } },
+  set(k, v) { try { sessionStorage.setItem(k, v); } catch {} },
+  del(k) { try { sessionStorage.removeItem(k); } catch {} },
+};
+function toast(msg, bad = false) {
+  const t = el('div', { class: 'toast' + (bad ? ' bad' : ''), text: msg });
+  $('#toasts').append(t);
+  setTimeout(() => t.remove(), bad ? 6000 : 3500);
+}
+const key = (s) => String(s ?? '').trim().toLowerCase();
+const fmtDate = (d) => {
+  if (!d) return '—';
+  const x = new Date(d + (String(d).length === 10 ? 'T00:00:00' : ''));
+  return isNaN(x) ? '—' : x.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+};
+const todayIST = () => new Date(Date.now() + 5.5 * 3600e3).toISOString().slice(0, 10);
+
+// ---------- API ----------
+let token = store.get('vcme_admin_token');
+async function api(action, payload = {}) {
+  const headers = { 'Content-Type': 'application/json' };
+  if (CONFIG.PUBLISHABLE_KEY) { headers.apikey = CONFIG.PUBLISHABLE_KEY; headers.Authorization = 'Bearer ' + CONFIG.PUBLISHABLE_KEY; }
+  if (token) headers['x-admin-token'] = token;
+  let res;
+  try {
+    res = await fetch(ENDPOINT, { method: 'POST', headers, body: JSON.stringify({ action, ...payload }) });
+  } catch {
+    throw new Error('Cannot reach the server. Check the internet connection.');
+  }
+  let data = {};
+  try { data = await res.json(); } catch {}
+  // A 401 WITHOUT our own "error" field comes from Supabase's gateway, not
+  // from the admin-portal function: JWT verification is still switched on.
+  if (res.status === 401 && !data.error) {
+    throw new Error('Supabase blocked the request before it reached the admin-portal function. '
+      + 'In Supabase > Edge Functions > admin-portal > Settings, turn OFF "Verify JWT" and save.');
+  }
+  if (res.status === 401 && action !== 'login') { logout(true); throw new Error('Session expired. Please log in again.'); }
+  if (res.status === 404) throw new Error('The admin-portal function is not deployed yet (name must be exactly admin-portal).');
+  if (!res.ok) throw new Error(data.error || data.message || data.msg || ('Error ' + res.status));
+  return data;
+}
+
+// ---------- login / logout ----------
+$('#loginForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = $('#loginBtn'), err = $('#loginErr');
+  err.classList.add('hidden');
+  btn.disabled = true; btn.replaceChildren(el('span', { class: 'spinner' }), ' Logging in…');
+  try {
+    const r = await api('login', { username: $('#lu').value, password: $('#lp').value });
+    token = r.token; store.set('vcme_admin_token', token);
+    $('#lp').value = '';
+    showApp();
+  } catch (x) {
+    err.textContent = x.message; err.classList.remove('hidden');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Log in';
+  }
+});
+function logout(expired = false) {
+  token = null; store.del('vcme_admin_token');
+  clearInterval(autoTimer);
+  $('#app').classList.add('hidden'); $('#login').classList.remove('hidden');
+  if (expired) { const err = $('#loginErr'); err.textContent = 'Session expired. Please log in again.'; err.classList.remove('hidden'); }
+}
+$('#logoutBtn').addEventListener('click', () => logout());
+
+function showApp() {
+  $('#login').classList.add('hidden'); $('#app').classList.remove('hidden');
+  loadScores(); loadUsers(); startAuto();
+}
+
+// ---------- tabs ----------
+document.querySelectorAll('.tab').forEach((b) => b.addEventListener('click', () => {
+  document.querySelectorAll('.tab').forEach((x) => x.classList.toggle('active', x === b));
+  for (const t of ['scores', 'cmes', 'users']) $('#tab-' + t).classList.toggle('hidden', b.dataset.tab !== t);
+  if (b.dataset.tab === 'scores') loadScores();
+  if (b.dataset.tab === 'cmes' && !cmeLoaded) loadCmes();
+}));
+
+/* =====================================================================
+   SCORES
+   ===================================================================== */
+let scoreRows = [];
+const openNodes = new Set();
+let autoTimer = null;
+
+function startAuto() {
+  clearInterval(autoTimer);
+  autoTimer = setInterval(() => {
+    if ($('#sAuto').checked && !document.hidden && !$('#tab-scores').classList.contains('hidden')) loadScores(true);
+  }, AUTO_MS);
+}
+
+async function loadScores(quiet = false) {
+  const btn = $('#sRefresh');
+  btn.disabled = true;
+  try {
+    const r = await api('scores');
+    scoreRows = r.rows || [];
+    $('#sUpdated').textContent = 'Updated ' + new Date(r.generated_at || Date.now()).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    fillZones('#sZone', scoreRows.map((x) => x.zone));
+    renderScores();
+  } catch (x) {
+    if (!quiet) toast(x.message, true);
+  } finally { btn.disabled = false; }
+}
+
+function fillZones(sel, zones) {
+  const s = $(sel), cur = s.value;
+  const list = [...new Set(zones.map((z) => String(z ?? '').trim().toUpperCase()).filter(Boolean))].sort();
+  s.replaceChildren(el('option', { value: '', text: 'All zones' }), ...list.map((z) => el('option', { value: z, text: z })));
+  s.value = list.includes(cur) ? cur : '';
+}
+
+const zero = () => ({ total: 0, done: 0, prog: 0, uDone: 0, uProg: 0, today: 0, people: 0, loggedToday: 0 });
+function add(a, r) {
+  a.total += r.planned_total; a.done += r.planned_completed; a.prog += r.planned_in_progress;
+  a.uDone += r.unplanned_completed; a.uProg += r.unplanned_in_progress; a.today += r.completed_today;
+  a.people += 1; if (r.last_login === todayIST()) a.loggedToday += 1;
+  return a;
+}
+const pct = (s) => (s.total ? Math.round((s.done / s.total) * 100) : 0);
+
+/** RSM (by rsm_hq) > ASM team (by asm_hq) > people, with totals at each level. */
+function buildTree(rows) {
+  const regions = new Map();
+  for (const r of rows) {
+    const rk = key(r.rsm_hq) || '(none)', ak = key(r.asm_hq) || '(none)';
+    if (!regions.has(rk)) regions.set(rk, { key: 'R:' + rk, hq: r.rsm_hq, rsmName: r.rsm_name, head: null, teams: new Map(), stats: zero() });
+    const reg = regions.get(rk);
+    add(reg.stats, r);
+    if (r.designation === 'RSM' && key(r.rsm_hq) === rk) reg.head = r;
+    if (!reg.teams.has(ak)) reg.teams.set(ak, { key: 'A:' + rk + '|' + ak, hq: r.asm_hq, asmName: r.asm_name, head: null, dsas: [], managers: [], stats: zero() });
+    const team = reg.teams.get(ak);
+    add(team.stats, r);
+    if (r.designation === 'DSA') team.dsas.push(r);
+    else {
+      team.managers.push(r);
+      if (r.designation === 'ASM' && key(r.asm_hq) === ak) team.head = r;
+    }
+  }
+  return [...regions.values()];
+}
+
+function matches(r, q) {
+  return !q || [r.name, r.hq, r.asm_name, r.rsm_name, r.username].some((v) => key(v).includes(q));
+}
+
+function sortList(list, getStats, getName) {
+  const mode = $('#sSort').value;
+  return list.sort((a, b) => {
+    const sa = getStats(a), sb = getStats(b);
+    if (mode === 'pct') return pct(sa) - pct(sb) || getName(a).localeCompare(getName(b));
+    if (mode === 'pctdesc') return pct(sb) - pct(sa) || getName(a).localeCompare(getName(b));
+    if (mode === 'done') return sb.done - sa.done || getName(a).localeCompare(getName(b));
+    return getName(a).localeCompare(getName(b));
+  });
+}
+
+function renderScores() {
+  const zone = $('#sZone').value, q = key($('#sSearch').value);
+  const inZone = scoreRows.filter((r) => !zone || String(r.zone ?? '').trim().toUpperCase() === zone);
+  // search: keep a whole region/team when its manager matches; else only matching people
+  const tree = buildTree(inZone);
+  const total = inZone.reduce(add, zero());
+  renderKpis(total, inZone);
+
+  const tb = $('#scoreTable tbody');
+  tb.replaceChildren();
+  if (!inZone.length) { tb.append(el('tr', {}, el('td', { colspan: 9, class: 'empty', text: 'No data yet.' }))); return; }
+
+  for (const reg of sortList(tree, (x) => x.stats, (x) => regionName(x))) {
+    const regionHit = !q || key(regionName(reg)).includes(q) || key(reg.hq).includes(q);
+    const teams = sortList([...reg.teams.values()], (x) => x.stats, (x) => teamName(reg, x));
+    const teamRows = [];
+    for (const t of teams) {
+      const teamHit = regionHit || key(teamName(reg, t)).includes(q) || key(t.hq).includes(q);
+      const people = sortList(t.dsas.filter((d) => teamHit || matches(d, q)), (d) => statsOf(d), (d) => d.name || '');
+      if (!teamHit && !people.length) continue;
+      teamRows.push({ t, people });
+    }
+    if (!regionHit && !teamRows.length) continue;
+    const forceOpen = !!q;
+    const rOpen = forceOpen || openNodes.has(reg.key);
+    tb.append(scoreRow('rsm', regionName(reg), reg.head ? (reg.head.hq || reg.hq) : reg.hq, reg.stats, reg.key, rOpen,
+      reg.head ? 'RSM' : 'RSM (no login)', reg.head?.last_login));
+    if (!rOpen) continue;
+    for (const { t, people } of teamRows) {
+      const tOpen = forceOpen || openNodes.has(t.key);
+      const direct = !t.head && reg.head && key(reg.head.asm_hq) === key(t.hq);
+      if (direct && !t.dsas.length && !people.length) continue;   // only the RSM: shown on the region line
+      tb.append(scoreRow('asm', teamName(reg, t), t.head ? t.head.hq : t.hq, t.stats, t.key, tOpen,
+        direct ? 'Direct to RSM' : (t.head ? 'ASM team' : 'ASM (no login)'), t.head?.last_login, people.length));
+      if (!tOpen) continue;
+      for (const d of people) tb.append(scoreRow('dsa', d.name, d.hq, statsOf(d), null, false, d.username, d.last_login));
+    }
+  }
+  tb.append(scoreRow('total', 'Total' + (zone ? ' · ' + zone : ''), '', total, null, false, inZone.length + ' users'));
+}
+
+const statsOf = (r) => add(zero(), r);
+const regionName = (reg) => reg.head?.name || reg.rsmName || reg.hq || 'Unassigned';
+function teamName(reg, t) {
+  if (t.head) return t.head.name;
+  if (reg.head && key(reg.head.asm_hq) === key(t.hq)) return reg.head.name + ' (direct)';
+  return t.asmName || t.hq || 'Unassigned';
+}
+
+function scoreRow(level, name, hq, s, nodeKey, open, sub, lastLogin, count) {
+  const p = pct(s), pending = Math.max(0, s.total - s.done);
+  const doneW = s.total ? (s.done / s.total) * 100 : 0, progW = s.total ? (s.prog / s.total) * 100 : 0;
+  const tr = el('tr', { class: 'lvl-' + level + (nodeKey ? ' clickable' : '') + (open ? ' open' : '') },
+    el('td', {}, el('div', { class: 'who' },
+      el('span', {}, nodeKey ? el('span', { class: 'chev', text: '›' }) : null, name || '—'),
+      sub || count ? el('small', { text: [sub, count != null ? count + ' DSA' + (count === 1 ? '' : 's') : null].filter(Boolean).join(' · ') }) : null)),
+    el('td', { class: 'hide-sm', text: hq || '' }),
+    el('td', {}, el('div', { class: 'pct' },
+      el('div', { class: 'bar-wrap' }, el('div', { class: 'bar-done', style: `width:${doneW}%` }), el('div', { class: 'bar-prog', style: `width:${progW}%` })),
+      el('b', { text: p + '%' }))),
+    el('td', { class: 'num', text: `${s.done} / ${s.total}` }),
+    el('td', { class: 'num', text: s.prog }),
+    el('td', { class: 'num', text: pending }),
+    el('td', { class: 'num', text: s.uDone }),
+    el('td', { class: 'num', text: s.today }),
+    el('td', { class: 'hide-sm', text: level === 'total' ? '' : fmtDate(lastLogin) }),
+  );
+  if (nodeKey) tr.addEventListener('click', () => { openNodes.has(nodeKey) ? openNodes.delete(nodeKey) : openNodes.add(nodeKey); renderScores(); });
+  return tr;
+}
+
+function renderKpis(t, rows) {
+  const pending = Math.max(0, t.total - t.done);
+  const k = (cls, l, v, s, extra) => el('div', { class: 'kpi ' + cls }, el('div', { class: 'l', text: l }), el('div', { class: 'v', text: v }), s ? el('div', { class: 's', text: s }) : null, extra || null);
+  const bar = el('div', { class: 'bar-wrap', style: 'margin-top:8px' },
+    el('div', { class: 'bar-done', style: `width:${t.total ? (t.done / t.total) * 100 : 0}%` }),
+    el('div', { class: 'bar-prog', style: `width:${t.total ? (t.prog / t.total) * 100 : 0}%` }));
+  const dsas = rows.filter((r) => r.designation === 'DSA').length;
+  $('#kpis').replaceChildren(
+    k('main', 'Planned completed', pct(t) + '%', `${t.done.toLocaleString('en-IN')} of ${t.total.toLocaleString('en-IN')} doctors`, bar),
+    k('', 'Pending (planned)', pending.toLocaleString('en-IN'), `${t.prog} in progress`),
+    k('', 'Unplanned completed', t.uDone.toLocaleString('en-IN'), `${t.uProg} in progress`),
+    k('', 'Completed today', t.today.toLocaleString('en-IN'), 'certificates issued'),
+    k('', 'Logged in today', t.loggedToday.toLocaleString('en-IN'), `of ${rows.length} users · ${dsas} DSAs`),
+  );
+}
+
+['#sZone', '#sSort'].forEach((s) => $(s).addEventListener('change', renderScores));
+$('#sSearch').addEventListener('input', renderScores);
+$('#sRefresh').addEventListener('click', () => loadScores());
+$('#sExpand').addEventListener('click', () => {
+  for (const reg of buildTree(scoreRows)) { openNodes.add(reg.key); for (const t of reg.teams.values()) openNodes.add(t.key); }
+  renderScores();
+});
+$('#sCollapse').addEventListener('click', () => { openNodes.clear(); renderScores(); });
+$('#sExport').addEventListener('click', () => {
+  const zone = $('#sZone').value;
+  const rows = scoreRows.filter((r) => !zone || String(r.zone ?? '').trim().toUpperCase() === zone);
+  const head = ['Zone', 'RSM', 'RSM HQ', 'ASM', 'ASM HQ', 'Name', 'Designation', 'Username', 'HQ', 'Planned total',
+    'Planned completed', '% completed', 'In progress', 'Pending', 'Unplanned completed', 'Unplanned in progress', 'Completed today', 'Last login'];
+  const lines = [head, ...rows.map((r) => [r.zone, r.rsm_name, r.rsm_hq, r.asm_name, r.asm_hq, r.name, r.designation, r.username, r.hq,
+    r.planned_total, r.planned_completed, pct(statsOf(r)) + '%', r.planned_in_progress, Math.max(0, r.planned_total - r.planned_completed),
+    r.unplanned_completed, r.unplanned_in_progress, r.completed_today, r.last_login || ''])];
+  const csv = '﻿' + lines.map((l) => l.map((v) => {
+    let s = String(v ?? '');
+    if (/^[=+\-@]/.test(s)) s = "'" + s;            // keep Excel from treating text as a formula
+    return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+  }).join(',')).join('\r\n');
+  const a = el('a', { href: URL.createObjectURL(new Blob([csv], { type: 'text/csv' })), download: `video-cme-scores-${todayIST()}.csv` });
+  document.body.append(a); a.click(); a.remove();
+});
+
+/* =====================================================================
+   DOCTOR CMEs
+   ===================================================================== */
+let cmes = [];
+let cmeLoaded = false;
+const istDate = (offsetDays = 0) => new Date(Date.now() + 5.5 * 3600e3 + offsetDays * 864e5).toISOString().slice(0, 10);
+$('#cFrom').value = istDate().slice(0, 8) + '01';   // first day of this month
+$('#cTo').value = istDate();
+const fmtDateTime = (t) => {
+  if (!t) return '—';
+  const x = new Date(t);
+  return isNaN(x) ? '—' : x.toLocaleString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+};
+const fmtDay = (d) => {
+  if (!d) return '—';
+  const x = new Date(d + 'T00:00:00');
+  return isNaN(x) ? '—' : x.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+};
+/** Only real https links are shown (the data comes from the app). */
+const safeUrl = (u) => (typeof u === 'string' && /^https:\/\/[^\s"'<>]+$/.test(u) ? u : null);
+const link = (u, text) => (safeUrl(u) ? el('a', { href: safeUrl(u), target: '_blank', rel: 'noopener noreferrer', text }) : null);
+const statusPill = (s) => el('span', { class: 'pill ' + (s === 'Certificate issued' ? 'done' : s === 'Video watched' ? 'watched' : 'started'), text: s || '—' });
+const typePill = (t) => el('span', { class: 'pill type' + (t === 'Unplanned' ? ' unpl' : ''), text: t || '—' });
+const indList = (r) => (r.indications ? String(r.indications).split(';').map((x) => x.trim()).filter(Boolean) : []);
+
+async function loadCmes() {
+  const from = $('#cFrom').value, to = $('#cTo').value;
+  if (from && to && from > to) { toast('"From" date is after "To" date.', true); return; }
+  const btn = $('#cLoad');
+  btn.disabled = true; btn.replaceChildren(el('span', { class: 'spinner' }), ' Loading…');
+  try {
+    const r = await api('cmes', { from: from || null, to: to || null });
+    cmes = r.rows || [];
+    cmeLoaded = true;
+    $('#cUpdated').textContent = 'Updated ' + new Date(r.generated_at || Date.now()).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+    fillZones('#cZone', cmes.map((x) => x.zone));
+    renderCmes();
+  } catch (x) {
+    toast(x.message, true);
+  } finally {
+    btn.disabled = false; btn.textContent = 'Show';
+  }
+}
+
+function filteredCmes() {
+  const z = $('#cZone').value, st = $('#cStatus').value, ty = $('#cType').value, q = key($('#cSearch').value);
+  return cmes.filter((r) =>
+    (!z || String(r.zone ?? '').trim().toUpperCase() === z) &&
+    (!st || (st === 'open' ? r.status !== 'Certificate issued' : r.status === st)) &&
+    (!ty || r.doctor_type === ty) &&
+    (!q || [r.doctor_name, r.original_name, r.doctor_code, r.doctor_mobile, r.doctor_email, r.dsa_name, r.dsa_username,
+      r.dsa_hq, r.doctor_hq, r.asm_name, r.rsm_name, r.certificate_number].some((v) => key(v).includes(q))));
+}
+
+function renderCmes() {
+  const list = filteredCmes();
+  // KPIs
+  const issued = list.filter((r) => r.status === 'Certificate issued');
+  const by = (t) => issued.filter((r) => r.doctor_type === t).length;
+  const watched = list.filter((r) => r.watched_percent != null).map((r) => Number(r.watched_percent)).filter((n) => Number.isFinite(n));
+  const avg = watched.length ? Math.round(watched.reduce((a, b) => a + b, 0) / watched.length) : null;
+  const surveyed = list.filter((r) => r.survey_submitted_at);
+  const k = (cls, l, v, s) => el('div', { class: 'kpi ' + cls }, el('div', { class: 'l', text: l }), el('div', { class: 'v', text: v }), s ? el('div', { class: 's', text: s }) : null);
+  $('#cKpis').replaceChildren(
+    k('main', 'Certificates issued', issued.length.toLocaleString('en-IN'), `of ${list.length.toLocaleString('en-IN')} doctor sessions`),
+    k('', 'Planned', by('Planned').toLocaleString('en-IN'), `+ ${by('Planned - other HQ')} from another HQ`),
+    k('', 'Unplanned', by('Unplanned').toLocaleString('en-IN'), 'doctors added in the app'),
+    k('', 'Not completed', (list.length - issued.length).toLocaleString('en-IN'), 'started, no certificate'),
+    k('', 'Survey answered', surveyed.length.toLocaleString('en-IN'), avg == null ? '' : `average video watched ${avg}%`),
+  );
+
+  // survey summary (indications)
+  const counts = new Map();
+  for (const r of surveyed) for (const i of indList(r)) counts.set(i, (counts.get(i) || 0) + 1);
+  const box = $('#cSurvey');
+  box.replaceChildren();
+  $('#cSurveyNote').textContent = surveyed.length ? `${surveyed.length} doctor${surveyed.length === 1 ? '' : 's'} answered · a doctor can choose several` : '';
+  if (!counts.size) box.append(el('div', { class: 'muted', text: 'No survey answers in this selection.' }));
+  for (const [name, n] of [...counts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))) {
+    const p = Math.round((n / surveyed.length) * 100);
+    box.append(el('div', { class: 'srow' },
+      el('span', { text: name }),
+      el('div', { class: 'bar-wrap' }, el('div', { class: 'bar-done', style: `width:${p}%` })),
+      el('b', { text: `${n} · ${p}%` })));
+  }
+
+  // table
+  $('#cCount').textContent = `Doctor CMEs · ${list.length.toLocaleString('en-IN')} shown`;
+  const tb = $('#cmeTable tbody');
+  tb.replaceChildren();
+  if (!list.length) { tb.append(el('tr', {}, el('td', { colspan: 8, class: 'empty', text: cmeLoaded ? 'No doctor sessions match.' : 'Choose dates and click Show.' }))); return; }
+  for (const r of list.slice(0, 500)) {
+    const tr = el('tr', { class: 'clickable', title: 'Click for all details' },
+      el('td', {}, el('div', { class: 'who' }, el('span', { text: fmtDay(r.cme_date) }), el('small', {}, statusPill(r.status)))),
+      el('td', {}, el('div', { class: 'who' }, el('span', { text: r.doctor_name || '—' }),
+        el('small', { text: [r.degree, r.classification, r.doctor_code].filter(Boolean).join(' · ') }))),
+      el('td', { class: 'hide-sm' }, el('div', { class: 'who' }, el('span', { text: r.doctor_mobile || '—' }), el('small', { text: r.doctor_email || '—' }))),
+      el('td', {}, typePill(r.doctor_type)),
+      el('td', { class: 'hide-sm' }, el('div', { class: 'who' }, el('span', { text: r.dsa_name || r.dsa_username || '—' }),
+        el('small', { text: [r.dsa_hq, r.asm_name ? 'ASM ' + r.asm_name : null].filter(Boolean).join(' · ') }))),
+      el('td', { class: 'hide-sm ind', text: r.indications || (r.survey_submitted_at ? '(answered)' : '—') }),
+      el('td', { class: 'num hide-sm', text: r.watched_percent != null ? Math.round(Number(r.watched_percent)) + '%' : '—' }),
+      el('td', {}, el('div', { class: 'who' }, el('span', { text: r.certificate_number || '—' }),
+        el('div', { class: 'links' }, link(r.certificate_png_url, 'PNG'), link(r.certificate_pdf_url, 'PDF'), link(r.photo_url, 'Photo')))),
+    );
+    tr.addEventListener('click', (e) => { if (!e.target.closest('a')) openCme(r); });
+    tb.append(tr);
+  }
+  if (list.length > 500) tb.append(el('tr', {}, el('td', { colspan: 8, class: 'empty', text: `Showing the first 500 of ${list.length}. Narrow the dates or filters, or use Export CSV for all rows.` })));
+}
+
+function openCme(r) {
+  const kv = (pairs) => el('dl', { class: 'kv' }, ...pairs.filter(([, v]) => v != null && v !== '').flatMap(([k, v]) => [el('dt', { text: k }), el('dd', {}, v)]));
+  const answers = r.survey_answers && typeof r.survey_answers === 'object' ? r.survey_answers : null;
+  const otherAnswers = answers ? Object.entries(answers).filter(([k]) => !['indication_preferences', 'q_indications'].includes(k)) : [];
+  const photo = safeUrl(r.photo_url);
+  const body = el('div', { class: 'body' },
+    el('div', { class: 'section', text: 'Doctor' }),
+    el('div', { style: 'display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap' },
+      photo ? el('a', { href: photo, target: '_blank', rel: 'noopener noreferrer' }, el('img', { class: 'photo', src: photo, alt: 'Doctor photo', loading: 'lazy' })) : null,
+      el('div', { style: 'flex:1;min-width:240px' }, kv([
+        ['Name', r.doctor_name], ['Name in the list', r.original_name ? r.original_name + ' (spelling corrected)' : null],
+        ['Mobile', r.doctor_mobile], ['Email', r.doctor_email], ['Degree', r.degree], ['Class', r.classification],
+        ['Doctor code', r.doctor_code], ['Doctor HQ', r.doctor_hq], ['Type', r.doctor_type]]))),
+    el('div', { class: 'section', text: 'Session' }),
+    kv([['Status', r.status], ['Product / AV', [r.product_name, r.session_name].filter(Boolean).join(' · ')],
+      ['Started', fmtDateTime(r.started_at)], ['Video finished', r.video_completed_at ? fmtDateTime(r.video_completed_at) : null],
+      ['Video watched', r.watched_percent != null ? Math.round(Number(r.watched_percent)) + '%' : null]]),
+    el('div', { class: 'section', text: 'Survey' }),
+    r.survey_submitted_at
+      ? kv([['Answered', fmtDateTime(r.survey_submitted_at)], ['Indications', r.indications || '—'],
+          ...otherAnswers.map(([k, v]) => [k.replace(/^q_/, '').replace(/_/g, ' '), Array.isArray(v) ? v.join('; ') : String(v ?? '')])])
+      : el('p', { class: 'muted', text: 'Survey not answered.' }),
+    el('div', { class: 'section', text: 'Certificate' }),
+    r.certificate_number
+      ? kv([['Number', r.certificate_number], ['Issued', fmtDateTime(r.certificate_issued_at)],
+          ['Files', el('div', { class: 'links' }, link(r.certificate_png_url, 'Open PNG'), link(r.certificate_pdf_url, 'Open PDF'), link(r.photo_url, 'Open photo'))],
+          ['Shared on WhatsApp', String(r.whatsapp_shares ?? 0) + ' time(s)'], ['Downloaded', String(r.downloads ?? 0) + ' time(s)']])
+      : el('p', { class: 'muted', text: 'No certificate issued yet.' }),
+    el('div', { class: 'section', text: 'Counts for' }),
+    kv([['DSA', [r.dsa_name, r.dsa_username].filter(Boolean).join(' · ')], ['Designation', r.dsa_designation], ['HQ', r.dsa_hq],
+      ['Zone', r.zone], ['ASM', r.asm_name], ['RSM', r.rsm_name]]));
+  const modal = el('div', { class: 'modal', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Doctor CME details' },
+    el('header', {}, el('h3', { text: r.doctor_name || 'Doctor CME' }), statusPill(r.status),
+      el('button', { class: 'btn small ghost', type: 'button', text: '✕', 'aria-label': 'Close', onclick: () => close() })),
+    body,
+    el('footer', {}, el('button', { class: 'btn', type: 'button', text: 'Close', onclick: () => close() })));
+  const backdrop = el('div', { class: 'backdrop' }, modal);
+  const close = () => { backdrop.remove(); document.removeEventListener('keydown', esc); };
+  const esc = (e) => { if (e.key === 'Escape') close(); };
+  backdrop.addEventListener('mousedown', (e) => { if (e.target === backdrop) close(); });
+  document.addEventListener('keydown', esc);
+  document.body.append(backdrop);
+}
+
+['#cZone', '#cStatus', '#cType'].forEach((s) => $(s).addEventListener('change', renderCmes));
+$('#cSearch').addEventListener('input', renderCmes);
+$('#cLoad').addEventListener('click', loadCmes);
+$('#cExport').addEventListener('click', () => {
+  const list = filteredCmes();
+  if (!list.length) { toast('Nothing to export.', true); return; }
+  const cols = [
+    ['Date', (r) => r.cme_date], ['Status', (r) => r.status], ['Doctor name', (r) => r.doctor_name], ['Name in list', (r) => r.original_name],
+    ['Doctor code', (r) => r.doctor_code], ['Mobile', (r) => r.doctor_mobile], ['Email', (r) => r.doctor_email], ['Degree', (r) => r.degree],
+    ['Class', (r) => r.classification], ['Doctor HQ', (r) => r.doctor_hq], ['Doctor type', (r) => r.doctor_type],
+    ['Product', (r) => r.product_name], ['AV', (r) => r.session_name],
+    ['Started', (r) => fmtDateTime(r.started_at)], ['Video finished', (r) => r.video_completed_at ? fmtDateTime(r.video_completed_at) : ''],
+    ['Video watched %', (r) => r.watched_percent != null ? Math.round(Number(r.watched_percent)) : ''],
+    ['Survey answered', (r) => r.survey_submitted_at ? fmtDateTime(r.survey_submitted_at) : ''], ['Indications', (r) => r.indications],
+    ['Certificate no.', (r) => r.certificate_number], ['Certificate issued', (r) => r.certificate_issued_at ? fmtDateTime(r.certificate_issued_at) : ''],
+    ['Certificate PNG', (r) => safeUrl(r.certificate_png_url) || ''], ['Certificate PDF', (r) => safeUrl(r.certificate_pdf_url) || ''],
+    ['Doctor photo', (r) => safeUrl(r.photo_url) || ''], ['WhatsApp shares', (r) => r.whatsapp_shares], ['Downloads', (r) => r.downloads],
+    ['DSA', (r) => r.dsa_name], ['DSA username', (r) => r.dsa_username], ['DSA HQ', (r) => r.dsa_hq], ['Zone', (r) => r.zone],
+    ['ASM', (r) => r.asm_name], ['RSM', (r) => r.rsm_name],
+  ];
+  const lines = [cols.map((c) => c[0]), ...list.map((r) => cols.map((c) => c[1](r)))];
+  const csv = '\ufeff' + lines.map((l) => l.map((v) => {
+    let s = String(v ?? '');
+    if (/^[=+\-@]/.test(s)) s = "'" + s;            // keep Excel from treating text as a formula
+    return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+  }).join(',')).join('\r\n');
+  const a = el('a', { href: URL.createObjectURL(new Blob([csv], { type: 'text/csv' })), download: `video-cme-doctors-${$('#cFrom').value || 'all'}-to-${$('#cTo').value || 'all'}.csv` });
+  document.body.append(a); a.click(); a.remove();
+});
+
+/* =====================================================================
+   USERS
+   ===================================================================== */
+let users = [];
+
+async function loadUsers() {
+  try {
+    const r = await api('users');
+    users = r.rows || [];
+    fillZones('#uZone', users.map((u) => u.zone));
+    renderUsers();
+  } catch (x) { toast(x.message, true); }
+}
+
+function renderUsers() {
+  const q = key($('#uSearch').value), d = $('#uDesig').value, z = $('#uZone').value, st = $('#uStatus').value;
+  const list = users.filter((u) =>
+    (!d || u.designation === d) &&
+    (!z || String(u.zone ?? '').trim().toUpperCase() === z) &&
+    (!st || (st === 'active' ? u.is_active : !u.is_active)) &&
+    (!q || [u.dsa_name, u.username, u.dsa_hq, u.dsa_mobile, u.dsa_email, u.asm_name, u.rsm_name].some((v) => key(v).includes(q))));
+  $('#uCount').textContent = `Users · ${list.length.toLocaleString('en-IN')} shown`;
+  const tb = $('#userTable tbody');
+  tb.replaceChildren();
+  if (!list.length) { tb.append(el('tr', {}, el('td', { colspan: 8, class: 'empty', text: 'No users match.' }))); return; }
+  for (const u of list.slice(0, 500)) {
+    const desig = (u.designation || '').toLowerCase();
+    tb.append(el('tr', {},
+      el('td', {}, el('div', { class: 'who' }, el('span', { text: u.dsa_name || '—' }), el('small', { text: u.username }))),
+      el('td', {}, el('span', { class: 'pill ' + desig, text: u.designation || '—' })),
+      el('td', { text: u.dsa_hq || '—' }),
+      el('td', { class: 'hide-sm rep' }, el('div', { class: 'who' },
+        el('span', { text: u.designation === 'RSM' ? '—' : (u.designation === 'ASM' ? '' : (u.asm_name || '—')) }),
+        el('small', { text: u.designation === 'RSM' ? '' : 'RSM: ' + (u.rsm_name || '—') }))),
+      el('td', { class: 'hide-sm wrap' }, el('div', { class: 'who' }, el('span', { text: u.dsa_mobile || '—' }), el('small', { text: u.dsa_email || '—' }))),
+      el('td', { class: 'hide-sm', text: fmtDate(u.last_login) }),
+      el('td', {}, el('span', { class: 'pill ' + (u.is_active ? 'on' : 'off'), text: u.is_active ? 'Active' : 'Inactive' })),
+      el('td', {}, el('div', { class: 'actions' },
+        el('button', { class: 'btn small', text: 'Edit', onclick: () => openForm('edit', u) }),
+        u.is_active ? el('button', { class: 'btn small', text: 'Replace', title: 'A new person takes over this post', onclick: () => openForm('replace', u) }) : null,
+        el('button', { class: 'btn small ' + (u.is_active ? 'danger' : ''), text: u.is_active ? 'Deactivate' : 'Activate', onclick: () => setActive(u, !u.is_active) }),
+      )),
+    ));
+  }
+  if (list.length > 500) tb.append(el('tr', {}, el('td', { colspan: 8, class: 'empty', text: `Showing the first 500 of ${list.length}. Use the search or filters to narrow down.` })));
+}
+['#uDesig', '#uZone', '#uStatus'].forEach((s) => $(s).addEventListener('change', renderUsers));
+$('#uSearch').addEventListener('input', renderUsers);
+$('#uAdd').addEventListener('click', () => openForm('add'));
+
+async function setActive(u, active) {
+  const msg = active
+    ? `Activate ${u.dsa_name}? They will be able to log in again.`
+    : `Deactivate ${u.dsa_name}? They will not be able to log in. Their past CMEs are kept.`;
+  if (!confirm(msg)) return;
+  try {
+    await api('set_active', { username: u.username, active });
+    toast(`${u.dsa_name} ${active ? 'activated' : 'deactivated'}`);
+    await loadUsers(); loadScores(true);
+  } catch (x) { toast(x.message, true); }
+}
+
+// ---------- add / edit / replace form ----------
+const managersOf = (desig) => users.filter((u) => u.is_active && u.designation === desig).sort((a, b) => (a.dsa_name || '').localeCompare(b.dsa_name || ''));
+
+function openForm(mode, u = null) {
+  const isEdit = mode === 'edit', isReplace = mode === 'replace';
+  const v = (k) => (u && !isReplace ? (u[k] ?? '') : '');
+  const title = isEdit ? `Edit ${u.dsa_name}` : isReplace ? `Replace ${u.dsa_name}` : 'Add user';
+
+  const f = {};  // field elements
+  const input = (k, label, opts = {}) => {
+    f[k] = el('input', { class: 'in', id: 'f_' + k, value: opts.value ?? v(k), type: opts.type || 'text', placeholder: opts.ph || '',
+      autocomplete: opts.ac || 'off', inputmode: opts.mode || null, disabled: opts.disabled || null });
+    return el('div', {}, el('label', { class: 'f', for: 'f_' + k, text: label }), f[k], opts.hint ? el('div', { class: 'hint', text: opts.hint }) : null);
+  };
+
+  const desigSel = el('select', { class: 'in', id: 'f_designation', disabled: isReplace || null },
+    ...['DSA', 'ASM', 'RSM'].map((d) => el('option', { value: d, text: d, selected: (isReplace ? u.designation : v('designation') || 'DSA') === d || null })));
+  const zoneSel = el('input', { class: 'in', id: 'f_zone', list: 'zoneList', value: isReplace ? (u.zone || '') : v('zone'), disabled: isReplace || null, placeholder: 'e.g. WEST' });
+  const zoneList = el('datalist', { id: 'zoneList' }, ...[...new Set(users.map((x) => String(x.zone || '').toUpperCase()).filter(Boolean))].sort().map((z) => el('option', { value: z })));
+
+  // reporting line
+  const repSel = el('select', { class: 'in', id: 'f_reports' });
+  const repInfo = el('div', { class: 'hint' });
+  const codeWrap = el('div');
+  const cascadeWrap = el('div');
+  let reportsTo = null;
+
+  function fillReports() {
+    const d = desigSel.value;
+    codeWrap.replaceChildren();
+    if (d === 'RSM') {
+      repSel.replaceChildren(el('option', { value: '', text: '— RSM reports to the head office —' }));
+      repSel.disabled = true;
+      codeWrap.append(input('rsm_hq', 'Region code (RSM HQ)', { value: isEdit ? (u.rsm_hq || '') : '', ph: 'Defaults to the HQ', hint: 'All ASMs and DSAs of this region carry this code as their RSM HQ.' }));
+      codeWrap.append(input('asm_hq', 'Own team code (ASM HQ)', { value: isEdit ? (u.asm_hq || '') : '', ph: 'Defaults to the HQ', hint: 'DSAs reporting straight to this RSM carry this code as their ASM HQ.' }));
+    } else {
+      repSel.disabled = isReplace;
+      const pool = d === 'DSA' ? [...managersOf('ASM'), ...managersOf('RSM')] : managersOf('RSM');
+      repSel.replaceChildren(el('option', { value: '', text: d === 'DSA' ? '— choose the ASM (or RSM) —' : '— choose the RSM —' }),
+        ...pool.map((m) => el('option', { value: m.username, text: `${m.dsa_name} · ${m.designation} · ${m.dsa_hq}${m.designation === 'ASM' && m.rsm_name ? ' (RSM ' + m.rsm_name + ')' : ''}` })));
+      // preselect current manager
+      const src = isReplace || isEdit ? u : null;
+      if (src) {
+        const cur = pool.find((m) => d === 'DSA' ? key(m.asm_hq) === key(src.asm_hq) && key(m.rsm_hq) === key(src.rsm_hq)
+                                                  : key(m.rsm_hq) === key(src.rsm_hq));
+        if (cur) repSel.value = cur.username;
+      }
+      if (d === 'ASM') codeWrap.append(input('asm_hq', 'Team code (ASM HQ)', { value: isEdit ? (u.asm_hq || '') : '', ph: 'Defaults to the HQ', hint: 'This ASM\'s DSAs carry this code as their ASM HQ.' }));
+    }
+    onReports();
+  }
+  function onReports() {
+    const d = desigSel.value;
+    reportsTo = users.find((m) => m.username === repSel.value) || null;
+    if (d === 'RSM') { repInfo.textContent = ''; return; }
+    if (reportsTo) {
+      repInfo.textContent = d === 'DSA'
+        ? `ASM: ${reportsTo.designation === 'ASM' ? reportsTo.dsa_name : reportsTo.dsa_name + ' (RSM, direct)'} · RSM: ${reportsTo.rsm_name || '—'}`
+        : `RSM: ${reportsTo.dsa_name} · region ${reportsTo.rsm_hq || '—'}`;
+    } else if (u && (isEdit || isReplace)) {
+      repInfo.textContent = `Currently: ASM ${u.asm_name || '—'} (${u.asm_hq || '—'}) · RSM ${u.rsm_name || '—'} (${u.rsm_hq || '—'})`;
+    } else repInfo.textContent = '';
+  }
+  desigSel.addEventListener('change', () => { fillReports(); fillCascade(); });
+  repSel.addEventListener('change', onReports);
+
+  // manager edit: also update their team's rows
+  function fillCascade() {
+    cascadeWrap.replaceChildren();
+    if (!isEdit || !['ASM', 'RSM'].includes(u.designation) || desigSel.value !== u.designation) return;
+    const field = u.designation === 'ASM' ? 'asm_hq' : 'rsm_hq';
+    const n = users.filter((x) => x.username !== u.username && key(x[field]) && key(x[field]) === key(u[field])).length;
+    if (!n) return;
+    f.cascade = el('input', { type: 'checkbox', id: 'f_cascade', checked: true });
+    cascadeWrap.append(el('label', { class: 'check', for: 'f_cascade' }, f.cascade,
+      el('span', {}, `Also update this ${u.designation}'s name, mobile, email${u.designation === 'ASM' ? ' and team code' : ' and region code'} on the `,
+        el('b', { text: `${n} team member${n === 1 ? '' : 's'}` }), ' who report to them.')));
+  }
+
+  const nameIn = input('dsa_name', 'Full name');
+  const mobileIn = input('dsa_mobile', 'Mobile', { mode: 'numeric', ph: '10-digit mobile' });
+  const userIn = input('username', 'Username (login ID)', { disabled: isEdit, ph: 'Usually the mobile number',
+    hint: isEdit ? 'The username cannot be changed. Use Replace for a new person.' : 'Usually the mobile number. Filled automatically from the mobile.' });
+  const emailIn = input('dsa_email', 'Email', { type: 'email', ph: 'name@example.com', hint: 'Must be unique: it identifies the user\'s account.' });
+  const pwIn = input('password', isEdit ? 'New password' : 'Password', { type: 'password', ac: 'new-password',
+    ph: isEdit ? 'Leave blank to keep the current password' : 'At least 6 characters' });
+  const hqIn = input('dsa_hq', 'HQ', { value: isReplace ? (u.dsa_hq || '') : v('dsa_hq'), disabled: isReplace,
+    hint: 'Spell it exactly as in the doctor list, so the right doctors are shown.' });
+  if (!isEdit) f.dsa_mobile.addEventListener('input', () => {
+    const m = f.dsa_mobile.value.replace(/\D/g, '').replace(/^(91|0)(?=[6-9]\d{9}$)/, '');
+    if (!f.username.dataset.touched) f.username.value = /^[6-9]\d{9}$/.test(m) ? m : '';
+  });
+  f.username.addEventListener('input', () => { f.username.dataset.touched = '1'; });
+
+  const err = el('div', { class: 'err hidden' });
+  const saveBtn = el('button', { class: 'btn primary', type: 'submit', text: isReplace ? 'Replace person' : isEdit ? 'Save changes' : 'Add user' });
+
+  const body = el('div', { class: 'body' },
+    isReplace ? el('div', { class: 'note warn' }, el('b', { text: 'New person takes over this post. ' }),
+      `${u.dsa_name} (${u.username}) will be deactivated. The post keeps its HQ (${u.dsa_hq}), designation (${u.designation}) and reporting line`,
+      u.designation !== 'DSA' ? ', and their team will report to the new person.' : '.') : null,
+    el('div', { class: 'section', text: isReplace ? 'New person' : 'Person' }),
+    el('div', { class: 'grid2' }, nameIn, mobileIn, userIn, emailIn, pwIn),
+    el('div', { class: 'section', text: 'Post' }),
+    el('div', { class: 'grid2' },
+      el('div', {}, el('label', { class: 'f', for: 'f_designation', text: 'Designation' }), desigSel),
+      el('div', {}, el('label', { class: 'f', for: 'f_zone', text: 'Zone' }), zoneSel, zoneList),
+      hqIn,
+      el('div', {}, el('label', { class: 'f', for: 'f_reports', text: 'Reports to' }), repSel, repInfo)),
+    codeWrap, cascadeWrap, err);
+
+  const form = el('form', { class: 'modal', role: 'dialog', 'aria-modal': 'true', 'aria-label': title },
+    el('header', {}, el('h3', { text: title }), el('button', { class: 'btn small ghost', type: 'button', text: '✕', 'aria-label': 'Close', onclick: () => close() })),
+    body,
+    el('footer', {}, el('button', { class: 'btn', type: 'button', text: 'Cancel', onclick: () => close() }), saveBtn));
+  const backdrop = el('div', { class: 'backdrop' }, form);
+  const close = () => backdrop.remove();
+  backdrop.addEventListener('mousedown', (e) => { if (e.target === backdrop) close(); });
+  document.addEventListener('keydown', function esc(e) { if (e.key === 'Escape') { close(); document.removeEventListener('keydown', esc); } });
+  document.body.append(backdrop);
+  fillReports(); fillCascade();
+  (isEdit ? f.dsa_name : f.dsa_name).focus();
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    err.classList.add('hidden');
+    const val = (k) => (f[k] ? f[k].value.trim() : '');
+    const d = desigSel.value;
+    const mobile = val('dsa_mobile').replace(/\D/g, '').replace(/^(91|0)(?=[6-9]\d{9}$)/, '');
+    const problems = [];
+    if (val('dsa_name').length < 3) problems.push('Enter the full name.');
+    if (!isEdit && !val('username')) problems.push('Enter the username.');
+    if (mobile && !/^[6-9]\d{9}$/.test(mobile)) problems.push('Mobile must be a 10-digit Indian mobile number.');
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(val('dsa_email'))) problems.push('Enter a valid email.');
+    if (!isEdit && val('password').length < 6) problems.push('Password must be at least 6 characters.');
+    if (isEdit && val('password') && val('password').length < 6) problems.push('Password must be at least 6 characters.');
+    if (!isReplace && !val('dsa_hq')) problems.push('Enter the HQ.');
+    if (!isReplace && d !== 'RSM' && !reportsTo && !(isEdit && u.asm_hq)) problems.push(d === 'DSA' ? 'Choose the ASM (or RSM) this DSA reports to.' : 'Choose the RSM this ASM reports to.');
+    if (problems.length) { err.textContent = problems.join(' '); err.classList.remove('hidden'); return; }
+
+    // build the record
+    const rec = {
+      username: isEdit ? u.username : val('username'), designation: d, zone: zoneSel.value.trim().toUpperCase(),
+      dsa_name: val('dsa_name'), dsa_hq: isReplace ? u.dsa_hq : val('dsa_hq'), dsa_mobile: mobile, dsa_email: val('dsa_email').toLowerCase(),
+      asm_name: u?.asm_name ?? '', asm_hq: u?.asm_hq ?? '', asm_mobile: u?.asm_mobile ?? '', asm_email: u?.asm_email ?? '',
+      rsm_name: u?.rsm_name ?? '', rsm_hq: u?.rsm_hq ?? '', rsm_mobile: u?.rsm_mobile ?? '', rsm_email: u?.rsm_email ?? '',
+    };
+    if (!isReplace) {
+      if (d === 'DSA' && reportsTo) {
+        Object.assign(rec, { asm_name: reportsTo.asm_name, asm_hq: reportsTo.asm_hq, asm_mobile: reportsTo.asm_mobile, asm_email: reportsTo.asm_email,
+          rsm_name: reportsTo.rsm_name, rsm_hq: reportsTo.rsm_hq, rsm_mobile: reportsTo.rsm_mobile, rsm_email: reportsTo.rsm_email });
+      }
+      if (d === 'ASM') {
+        if (reportsTo) Object.assign(rec, { rsm_name: reportsTo.rsm_name, rsm_hq: reportsTo.rsm_hq, rsm_mobile: reportsTo.rsm_mobile, rsm_email: reportsTo.rsm_email });
+        rec.asm_hq = val('asm_hq') || (isEdit && u.designation === 'ASM' ? u.asm_hq : '') || rec.dsa_hq;
+      }
+      if (d === 'RSM') {
+        rec.rsm_hq = val('rsm_hq') || (isEdit && u.designation === 'RSM' ? u.rsm_hq : '') || rec.dsa_hq;
+        rec.asm_hq = val('asm_hq') || (isEdit && u.designation === 'RSM' ? u.asm_hq : '') || rec.rsm_hq;
+      }
+    }
+
+    saveBtn.disabled = true; saveBtn.replaceChildren(el('span', { class: 'spinner' }), ' Saving…');
+    try {
+      let r;
+      if (isReplace) r = await api('replace_user', { old_username: u.username, user: rec, password: val('password') });
+      else r = await api('save_user', { original_username: isEdit ? u.username : null, user: rec, password: val('password'), cascade: !!f.cascade?.checked });
+      close();
+      const extra = r.team_rows_updated ? ` · ${r.team_rows_updated} team member${r.team_rows_updated === 1 ? '' : 's'} updated` : '';
+      toast((isReplace ? `${rec.dsa_name} now holds the post` : isEdit ? 'Changes saved' : `${rec.dsa_name} added`) + extra);
+      await loadUsers(); loadScores(true);
+    } catch (x) {
+      err.textContent = x.message; err.classList.remove('hidden');
+    } finally {
+      saveBtn.disabled = false; saveBtn.textContent = isReplace ? 'Replace person' : isEdit ? 'Save changes' : 'Add user';
+    }
+  });
+}
+
+// ---------- start ----------
+if (token) showApp();
+</script>
+</body>
+</html>
