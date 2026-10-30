@@ -248,7 +248,7 @@
           <thead><tr>
             <th>Name</th><th class="hide-sm">HQ</th><th>Planned completed</th><th class="num">Done / Total</th>
             <th class="num">In progress</th><th class="num">Pending</th><th class="num">Unplanned</th>
-            <th class="num">Today</th><th class="hide-sm">Last login</th>
+            <th class="num" title="Planned + unplanned certificates, all time">Total CMEs</th><th class="num">Today</th><th class="hide-sm">Last login</th>
           </tr></thead>
           <tbody></tbody>
         </table></div>
@@ -520,7 +520,7 @@ function renderScores() {
 
   const tb = $('#scoreTable tbody');
   tb.replaceChildren();
-  if (!inZone.length) { tb.append(el('tr', {}, el('td', { colspan: 9, class: 'empty', text: 'No data yet.' }))); return; }
+  if (!inZone.length) { tb.append(el('tr', {}, el('td', { colspan: 10, class: 'empty', text: 'No data yet.' }))); return; }
 
   for (const reg of sortList(tree, (x) => x.stats, (x) => regionName(x))) {
     const regionHit = !q || key(regionName(reg)).includes(q) || key(reg.hq).includes(q);
@@ -574,6 +574,7 @@ function scoreRow(level, name, hq, s, nodeKey, open, sub, lastLogin, count) {
     el('td', { class: 'num', text: s.prog }),
     el('td', { class: 'num', text: pending }),
     el('td', { class: 'num', text: s.uDone }),
+    el('td', { class: 'num' }, el('b', { text: s.done + s.uDone })),
     el('td', { class: 'num', text: s.today }),
     el('td', { class: 'hide-sm', text: level === 'total' ? '' : fmtDate(lastLogin) }),
   );
@@ -590,6 +591,7 @@ function renderKpis(t, rows) {
   const dsas = rows.filter((r) => r.designation === 'DSA').length;
   $('#kpis').replaceChildren(
     k('main', 'Planned completed', pct(t) + '%', `${t.done.toLocaleString('en-IN')} of ${t.total.toLocaleString('en-IN')} doctors`, bar),
+    k('', 'Total CMEs till date', (t.done + t.uDone).toLocaleString('en-IN'), `${t.done.toLocaleString('en-IN')} planned + ${t.uDone.toLocaleString('en-IN')} unplanned`),
     k('', 'Pending (planned)', pending.toLocaleString('en-IN'), `${t.prog} in progress`),
     k('', 'Unplanned completed', t.uDone.toLocaleString('en-IN'), `${t.uProg} in progress`),
     k('', 'Completed today', t.today.toLocaleString('en-IN'), 'certificates issued'),
@@ -609,10 +611,10 @@ $('#sExport').addEventListener('click', () => {
   const zone = $('#sZone').value;
   const rows = scoreRows.filter((r) => !zone || String(r.zone ?? '').trim().toUpperCase() === zone);
   const head = ['Zone', 'RSM', 'RSM HQ', 'ASM', 'ASM HQ', 'Name', 'Designation', 'Username', 'HQ', 'Planned total',
-    'Planned completed', '% completed', 'In progress', 'Pending', 'Unplanned completed', 'Unplanned in progress', 'Completed today', 'Last login'];
+    'Planned completed', '% completed', 'In progress', 'Pending', 'Unplanned completed', 'Unplanned in progress', 'Total CMEs till date', 'Completed today', 'Last login'];
   const lines = [head, ...rows.map((r) => [r.zone, r.rsm_name, r.rsm_hq, r.asm_name, r.asm_hq, r.name, r.designation, r.username, r.hq,
     r.planned_total, r.planned_completed, pct(statsOf(r)) + '%', r.planned_in_progress, Math.max(0, r.planned_total - r.planned_completed),
-    r.unplanned_completed, r.unplanned_in_progress, r.completed_today, r.last_login || ''])];
+    r.unplanned_completed, r.unplanned_in_progress, r.planned_completed + r.unplanned_completed, r.completed_today, r.last_login || ''])];
   const csv = '﻿' + lines.map((l) => l.map((v) => {
     let s = String(v ?? '');
     if (/^[=+\-@]/.test(s)) s = "'" + s;            // keep Excel from treating text as a formula
@@ -725,7 +727,9 @@ function renderCmes() {
       el('td', { class: 'hide-sm ind', text: r.indications || (r.survey_submitted_at ? '(answered)' : '—') }),
       el('td', { class: 'num hide-sm', text: r.watched_percent != null ? Math.round(Number(r.watched_percent)) + '%' : '—' }),
       el('td', {}, el('div', { class: 'who' }, el('span', { text: r.certificate_number || '—' }),
-        el('div', { class: 'links' }, link(r.certificate_png_url, 'Image'), link(r.certificate_pdf_url, 'PDF'), link(r.photo_url, 'Photo')))),
+        r.certificate_archived_at
+          ? el('small', {}, el('span', { class: 'pill started', title: 'Files moved to the office archive on ' + fmtDay(String(r.certificate_archived_at).slice(0, 10)), text: 'Archived' }))
+          : el('div', { class: 'links' }, link(r.certificate_png_url, 'Image'), link(r.certificate_pdf_url, 'PDF'), link(r.photo_url, 'Photo')))),
     );
     tr.addEventListener('click', (e) => { if (!e.target.closest('a')) openCme(r); });
     tb.append(tr);
@@ -758,7 +762,9 @@ function openCme(r) {
     el('div', { class: 'section', text: 'Certificate' }),
     r.certificate_number
       ? kv([['Number', r.certificate_number], ['Issued', fmtDateTime(r.certificate_issued_at)],
-          ['Files', el('div', { class: 'links' }, link(r.certificate_png_url, 'Open image'), link(r.certificate_pdf_url, 'Open PDF'), link(r.photo_url, 'Open photo'))],
+          ['Files', r.certificate_archived_at
+            ? 'Archived on ' + fmtDateTime(r.certificate_archived_at) + ' (removed from Cloudinary; saved in the office archive)'
+            : el('div', { class: 'links' }, link(r.certificate_png_url, 'Open image'), link(r.certificate_pdf_url, 'Open PDF'), link(r.photo_url, 'Open photo'))],
           ['Shared on WhatsApp', String(r.whatsapp_shares ?? 0) + ' time(s)'], ['Downloaded', String(r.downloads ?? 0) + ' time(s)']])
       : el('p', { class: 'muted', text: 'No certificate issued yet.' }),
     el('div', { class: 'section', text: 'Counts for' }),
@@ -793,7 +799,8 @@ $('#cExport').addEventListener('click', () => {
     ['Survey answered', (r) => r.survey_submitted_at ? fmtDateTime(r.survey_submitted_at) : ''], ['Indications', (r) => r.indications],
     ['Certificate no.', (r) => r.certificate_number], ['Certificate issued', (r) => r.certificate_issued_at ? fmtDateTime(r.certificate_issued_at) : ''],
     ['Certificate image', (r) => safeUrl(r.certificate_png_url) || ''], ['Certificate PDF', (r) => safeUrl(r.certificate_pdf_url) || ''],
-    ['Doctor photo', (r) => safeUrl(r.photo_url) || ''], ['WhatsApp shares', (r) => r.whatsapp_shares], ['Downloads', (r) => r.downloads],
+    ['Doctor photo', (r) => safeUrl(r.photo_url) || ''],
+    ['Archived on', (r) => r.certificate_archived_at ? fmtDateTime(r.certificate_archived_at) : ''], ['WhatsApp shares', (r) => r.whatsapp_shares], ['Downloads', (r) => r.downloads],
     ['DSA', (r) => r.dsa_name], ['DSA username', (r) => r.dsa_username], ['DSA HQ', (r) => r.dsa_hq], ['Zone', (r) => r.zone],
     ['ASM', (r) => r.asm_name], ['RSM', (r) => r.rsm_name],
   ];
