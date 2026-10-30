@@ -725,7 +725,7 @@ function renderCmes() {
       el('td', { class: 'hide-sm ind', text: r.indications || (r.survey_submitted_at ? '(answered)' : '—') }),
       el('td', { class: 'num hide-sm', text: r.watched_percent != null ? Math.round(Number(r.watched_percent)) + '%' : '—' }),
       el('td', {}, el('div', { class: 'who' }, el('span', { text: r.certificate_number || '—' }),
-        el('div', { class: 'links' }, link(r.certificate_png_url, 'PNG'), link(r.certificate_pdf_url, 'PDF'), link(r.photo_url, 'Photo')))),
+        el('div', { class: 'links' }, link(r.certificate_png_url, 'Image'), link(r.certificate_pdf_url, 'PDF'), link(r.photo_url, 'Photo')))),
     );
     tr.addEventListener('click', (e) => { if (!e.target.closest('a')) openCme(r); });
     tb.append(tr);
@@ -758,7 +758,7 @@ function openCme(r) {
     el('div', { class: 'section', text: 'Certificate' }),
     r.certificate_number
       ? kv([['Number', r.certificate_number], ['Issued', fmtDateTime(r.certificate_issued_at)],
-          ['Files', el('div', { class: 'links' }, link(r.certificate_png_url, 'Open PNG'), link(r.certificate_pdf_url, 'Open PDF'), link(r.photo_url, 'Open photo'))],
+          ['Files', el('div', { class: 'links' }, link(r.certificate_png_url, 'Open image'), link(r.certificate_pdf_url, 'Open PDF'), link(r.photo_url, 'Open photo'))],
           ['Shared on WhatsApp', String(r.whatsapp_shares ?? 0) + ' time(s)'], ['Downloaded', String(r.downloads ?? 0) + ' time(s)']])
       : el('p', { class: 'muted', text: 'No certificate issued yet.' }),
     el('div', { class: 'section', text: 'Counts for' }),
@@ -792,7 +792,7 @@ $('#cExport').addEventListener('click', () => {
     ['Video watched %', (r) => r.watched_percent != null ? Math.round(Number(r.watched_percent)) : ''],
     ['Survey answered', (r) => r.survey_submitted_at ? fmtDateTime(r.survey_submitted_at) : ''], ['Indications', (r) => r.indications],
     ['Certificate no.', (r) => r.certificate_number], ['Certificate issued', (r) => r.certificate_issued_at ? fmtDateTime(r.certificate_issued_at) : ''],
-    ['Certificate PNG', (r) => safeUrl(r.certificate_png_url) || ''], ['Certificate PDF', (r) => safeUrl(r.certificate_pdf_url) || ''],
+    ['Certificate image', (r) => safeUrl(r.certificate_png_url) || ''], ['Certificate PDF', (r) => safeUrl(r.certificate_pdf_url) || ''],
     ['Doctor photo', (r) => safeUrl(r.photo_url) || ''], ['WhatsApp shares', (r) => r.whatsapp_shares], ['Downloads', (r) => r.downloads],
     ['DSA', (r) => r.dsa_name], ['DSA username', (r) => r.dsa_username], ['DSA HQ', (r) => r.dsa_hq], ['Zone', (r) => r.zone],
     ['ASM', (r) => r.asm_name], ['RSM', (r) => r.rsm_name],
